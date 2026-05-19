@@ -1,16 +1,7 @@
 import { Transform } from 'class-transformer';
-import {
-  IsArray,
-  IsEmail,
-  IsIn,
-  IsOptional,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
-import { Role } from '../../auth/role.constant';
+import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
 
-export class CreateUserDto {
+export class RegisterDto {
   @Transform(({ value }: { value: unknown }) =>
     typeof value === 'string' ? value.trim() : value,
   )
@@ -25,17 +16,8 @@ export class CreateUserDto {
   @MaxLength(255)
   email: string;
 
-  @IsOptional()
   @IsString()
   @MinLength(8)
   @MaxLength(128)
-  password?: string;
-
-  @IsOptional()
-  @IsArray()
-  @IsIn(Object.values(Role), { each: true })
-  roles?: Role[];
-
-  @IsOptional()
-  lastLoginAt?: Date;
+  password: string;
 }

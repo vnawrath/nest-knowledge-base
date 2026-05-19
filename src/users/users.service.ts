@@ -17,7 +17,10 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const user = this.usersRepository.create(createUserDto);
+    const user = this.usersRepository.create({
+      ...createUserDto,
+      password: createUserDto.password ?? null,
+    });
     return this.saveUser(user);
   }
 
@@ -30,7 +33,7 @@ export class UsersService {
     });
   }
 
-  async findOne(id: number): Promise<User> {
+  async findOne(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id } });
 
     if (!user) {
@@ -40,14 +43,35 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+  async findOneByEmail(email: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { email } });
+  }
+
+  findOneByEmailWithPassword(email: string): Promise<User | null> {
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .addSelect('user.password')
+      .where('user.email = :email', { email })
+      .getOne();
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
     this.usersRepository.merge(user, updateUserDto);
+
+    if (updateUserDto.password === undefined) {
+      delete (user as Partial<User>).password;
+    }
+
     return this.saveUser(user);
   }
 
-  async remove(id: number): Promise<void> {
-    const result = await this.usersRepository.delete(id);
+  async updateLastLoginAt(id: string, lastLoginAt: Date): Promise<void> {
+    await this.usersRepository.update(id, { lastLoginAt });
+  }
+
+  async remove(id: string): Promise<void> {
+    const result = await this.usersRepository.softDelete(id);
 
     if (result.affected !== 1) {
       throw new NotFoundException(`User ${id} not found`);

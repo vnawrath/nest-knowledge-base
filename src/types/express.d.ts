@@ -1,5 +1,12 @@
-declare namespace Express {
-  interface Request {
-    correlationId?: string;
+import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+
+declare global {
+  namespace Express {
+    interface Request {
+      correlationId?: string;
+      user?: JwtPayload;
+    }
   }
 }
+
+export {};

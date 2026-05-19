@@ -4,6 +4,7 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
+import { AuthModule } from './auth/auth.module';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { HealthModule } from './health/health.module';
 import { UsersModule } from './users/users.module';
@@ -19,10 +20,17 @@ import { ViteModule } from './vite/vite.module';
           .default('development'),
         PORT: Joi.number().default(3000),
         APP_BASE_URL: Joi.string().uri().default('http://localhost:3000'),
-        CORS_ORIGIN: Joi.string().default('*'),
+        CORS_ORIGIN: Joi.string().uri().default('http://localhost:3000'),
         DB_PATH: Joi.string().optional(),
         DB_SYNCHRONIZE: Joi.boolean().default(true),
         DB_LOGGING: Joi.boolean().default(false),
+        JWT_SECRET: Joi.string().required(),
+        JWT_REFRESH_SECRET: Joi.string()
+          .required()
+          .invalid(Joi.ref('JWT_SECRET')),
+        JWT_ACCESS_TTL: Joi.string().default('15m'),
+        JWT_REFRESH_TTL: Joi.string().default('7d'),
+        BCRYPT_ROUNDS: Joi.number().integer().min(4).default(10),
       }),
     }),
     TypeOrmModule.forRootAsync({
@@ -55,6 +63,7 @@ import { ViteModule } from './vite/vite.module';
         };
       },
     }),
+    AuthModule,
     HealthModule,
     UsersModule,
     ViteModule,

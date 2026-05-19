@@ -1,12 +1,10 @@
 import {
-  Form,
   NavLink,
   Outlet,
   isRouteErrorResponse,
-  useLoaderData,
   useRouteError,
 } from 'react-router';
-import { rootLoader } from './session';
+import { useAuth } from './lib/auth-context';
 
 const authenticatedLinks = [
   { label: 'Dashboard', to: '/' },
@@ -23,7 +21,16 @@ const authenticatedLinks = [
 ];
 
 export default function App() {
-  const { session } = useLoaderData<typeof rootLoader>();
+  const { loading, logout, user } = useAuth();
+
+  if (loading) {
+    return (
+      <main>
+        <h1>LLM Wiki</h1>
+        <p>Loading session...</p>
+      </main>
+    );
+  }
 
   return (
     <div>
@@ -33,17 +40,16 @@ export default function App() {
           Persistent knowledge workspace scaffolded with NestJS, Vite, and React
           Router.
         </p>
-        {session.authenticated ? (
+        {user ? (
           <div>
-            <p>Signed in as {session.email}</p>
-            <Form action="/login" method="post">
-              <input name="intent" type="hidden" value="sign-out" />
-              <button type="submit">Sign out</button>
-            </Form>
+            <p>Signed in as {user.email}</p>
+            <button onClick={() => void logout()} type="button">
+              Sign out
+            </button>
           </div>
         ) : null}
       </header>
-      {session.authenticated ? (
+      {user ? (
         <nav aria-label="Primary">
           {authenticatedLinks.map((link) => (
             <div key={link.to}>

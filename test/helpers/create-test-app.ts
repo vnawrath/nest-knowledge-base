@@ -1,5 +1,11 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { Test, TestingModule } from '@nestjs/testing';
+import cookieParser from 'cookie-parser';
 import { App } from 'supertest/types';
 import { AppModule } from '../../src/app.module';
 import { HttpExceptionFilter } from '../../src/common/filters/http-exception.filter';
@@ -17,6 +23,7 @@ export async function createTestApp(): Promise<INestApplication<App>> {
 
   const app = moduleFixture.createNestApplication<INestApplication<App>>();
 
+  app.use(cookieParser());
   app.setGlobalPrefix('api', { exclude: ['healthz'] });
 
   app.useGlobalPipes(
@@ -30,6 +37,7 @@ export async function createTestApp(): Promise<INestApplication<App>> {
 
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   await app.init();
   return app;

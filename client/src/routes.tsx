@@ -1,12 +1,7 @@
-import { Outlet } from 'react-router';
+import { Navigate, Outlet } from 'react-router';
 import type { RouteObject } from 'react-router';
 import App, { RootErrorBoundary, RouteErrorBoundary } from './App';
-import {
-  loginAction,
-  loginLoader,
-  requireAuthenticatedLoader,
-  rootLoader,
-} from './session';
+import { useAuth } from './lib/auth-context';
 import BatchIngestPage, {
   action as batchIngestAction,
   loader as batchIngestLoader,
@@ -70,26 +65,46 @@ import WikiPageDetail, {
 } from './pages/WikiPageDetail';
 
 function AuthenticatedOutlet() {
+  const { loading, user } = useAuth();
+
+  if (loading) {
+    return <main>Loading session...</main>;
+  }
+
+  if (!user) {
+    return <Navigate replace to="/login" />;
+  }
+
   return <Outlet />;
+}
+
+function LoginRoute() {
+  const { loading, user } = useAuth();
+
+  if (loading) {
+    return <main>Loading session...</main>;
+  }
+
+  if (user) {
+    return <Navigate replace to="/" />;
+  }
+
+  return <LoginPage />;
 }
 
 export const routes: RouteObject[] = [
   {
     id: 'root',
     path: '/',
-    loader: rootLoader,
     Component: App,
     errorElement: <RootErrorBoundary />,
     children: [
       {
         path: 'login',
-        loader: loginLoader,
-        action: loginAction,
-        Component: LoginPage,
+        Component: LoginRoute,
         errorElement: <RouteErrorBoundary />,
       },
       {
-        loader: () => requireAuthenticatedLoader({}),
         Component: AuthenticatedOutlet,
         children: [
           {
@@ -189,11 +204,6 @@ export const routes: RouteObject[] = [
           {
             path: '*',
             loader: () => {
-              const loaderData = requireAuthenticatedLoader({});
-              if (loaderData instanceof Response) {
-                return loaderData;
-              }
-
               throw new Response('Not Found', {
                 status: 404,
                 statusText: 'Not Found',

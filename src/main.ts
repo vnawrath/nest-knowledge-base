@@ -1,7 +1,8 @@
-import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -14,7 +15,11 @@ export async function bootstrap() {
   const isProd = config.get<string>('NODE_ENV', 'development') === 'production';
 
   app.use(isProd ? helmet() : helmet({ contentSecurityPolicy: false }));
-  app.enableCors({ origin: config.get<string>('CORS_ORIGIN', '*') });
+  app.use(cookieParser());
+  app.enableCors({
+    origin: config.get<string>('CORS_ORIGIN', 'http://localhost:3000'),
+    credentials: true,
+  });
   app.enableShutdownHooks();
 
   app.setGlobalPrefix('api', { exclude: ['healthz'] });
@@ -30,6 +35,7 @@ export async function bootstrap() {
 
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   const nodeEnv = config.get<string>('NODE_ENV', 'development');
   if (nodeEnv !== 'production') {
