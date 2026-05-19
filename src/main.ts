@@ -6,12 +6,14 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { ViteService } from './vite/vite.service';
 
 export async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
+  const isProd = config.get<string>('NODE_ENV', 'development') === 'production';
 
-  app.use(helmet());
+  app.use(isProd ? helmet() : helmet({ contentSecurityPolicy: false }));
   app.enableCors({ origin: config.get<string>('CORS_ORIGIN', '*') });
   app.enableShutdownHooks();
 
@@ -43,6 +45,9 @@ export async function bootstrap() {
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('api/docs', app, document);
   }
+
+  const viteService = app.get(ViteService);
+  await viteService.applyMiddleware(app);
 
   const port = config.get<number>('PORT', 3000);
   await app.listen(port);
