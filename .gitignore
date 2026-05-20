@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+
+# Environment
+.env
+
+# Local database
+data/
+
+# Coverage
+coverage/
+
+# macOS
+.DS_Store

@@ -1,0 +1,145 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #f6f1e8;
+  --foreground: #1f1a17;
+  --muted-foreground: #5c534b;
+  --card: #fffdf9;
+  --card-foreground: #1f1a17;
+  --popover: #fffdf9;
+  --popover-foreground: #1f1a17;
+  --primary: #1d6e6e;
+  --primary-foreground: #f7f4ee;
+  --secondary: #efe7da;
+  --secondary-foreground: #1f1a17;
+  --accent: #1d6e6e;
+  --accent-foreground: #f7f4ee;
+  --success: #3f6b3f;
+  --warning: #b4492d;
+  --border: #d8ccbc;
+  --input: #d8ccbc;
+  --ring: #1d6e6e;
+  --radius: 1rem;
+  --sidebar: #f1e8d8;
+  --sidebar-foreground: #1f1a17;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  color-scheme: light;
+}
+
+.dark {
+  --background: #161412;
+  --foreground: #f3ebdd;
+  --muted-foreground: #cdc2b1;
+  --card: #211d1a;
+  --card-foreground: #f3ebdd;
+  --popover: #211d1a;
+  --popover-foreground: #f3ebdd;
+  --primary: #5fb3b3;
+  --primary-foreground: #102020;
+  --secondary: #2b2521;
+  --secondary-foreground: #f3ebdd;
+  --accent: #5fb3b3;
+  --accent-foreground: #102020;
+  --success: #6fa36f;
+  --warning: #cf7253;
+  --border: #3a322d;
+  --input: #3a322d;
+  --ring: #5fb3b3;
+  --sidebar: #1a1715;
+  --sidebar-foreground: #f3ebdd;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+  --font-mono: var(--font-mono);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+  --shadow-manuscript: 0 18px 60px rgba(31, 26, 23, 0.08);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    background-image:
+      radial-gradient(circle at top, rgba(29, 110, 110, 0.08), transparent 32%),
+      linear-gradient(rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.35)),
+      repeating-linear-gradient(
+        180deg,
+        rgba(92, 83, 75, 0.03),
+        rgba(92, 83, 75, 0.03) 1px,
+        transparent 1px,
+        transparent 28px
+      );
+    min-height: 100vh;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    @apply font-sans;
+  }
+
+  ::selection {
+    background: rgba(29, 110, 110, 0.18);
+  }
+}
+
+@layer utilities {
+  .page-shell {
+    @apply mx-auto w-full max-w-[1600px] px-4 py-4 sm:px-6 lg:px-8;
+  }
+
+  .paper-panel {
+    @apply rounded-3xl border border-border bg-card shadow-[0_18px_60px_rgba(31,26,23,0.08)];
+  }
+
+  .inked-title {
+    @apply font-serif tracking-[0.02em] text-foreground;
+  }
+
+  .muted-label {
+    @apply text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground;
+  }
+
+  .manuscript-rule {
+    @apply h-px bg-[linear-gradient(90deg,transparent,rgba(92,83,75,0.35),transparent)];
+  }
+}
