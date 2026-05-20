@@ -25,6 +25,13 @@ export function assertPlaceholderRecord(
   return recordId;
 }
 
+export function notFoundResponse(recordName: string) {
+  return new Response(`${recordName} not found`, {
+    status: 404,
+    statusText: 'Not Found',
+  });
+}
+
 export function createPlaceholderAction(defaultIntent: string) {
   return async ({
     request,

@@ -1,5 +1,6 @@
 import react from '@vitejs/plugin-react';
 import { resolve } from 'node:path';
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig(({ mode }) => {
@@ -18,7 +19,12 @@ export default defineConfig(({ mode }) => {
   return {
     root: resolve(__dirname),
     envDir: rootDir,
-    plugins: [react()],
+    plugins: [react(), tailwindcss()],
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, './src'),
+      },
+    },
     build: {
       emptyOutDir: true,
       outDir: resolve(__dirname, '../dist/client'),

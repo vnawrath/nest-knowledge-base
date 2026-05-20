@@ -23,6 +23,7 @@ import LintPage, {
   loader as lintLoader,
 } from './pages/LintPage';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import LogPage, {
   action as logAction,
   loader as logLoader,
@@ -92,6 +93,20 @@ function LoginRoute() {
   return <LoginPage />;
 }
 
+function RegisterRoute() {
+  const { loading, user } = useAuth();
+
+  if (loading) {
+    return <main>Loading session...</main>;
+  }
+
+  if (user) {
+    return <Navigate replace to="/" />;
+  }
+
+  return <RegisterPage />;
+}
+
 export const routes: RouteObject[] = [
   {
     id: 'root',
@@ -102,6 +117,11 @@ export const routes: RouteObject[] = [
       {
         path: 'login',
         Component: LoginRoute,
+        errorElement: <RouteErrorBoundary />,
+      },
+      {
+        path: 'register',
+        Component: RegisterRoute,
         errorElement: <RouteErrorBoundary />,
       },
       {

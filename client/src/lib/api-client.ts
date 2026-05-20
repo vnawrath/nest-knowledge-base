@@ -34,7 +34,11 @@ function handleAuthFailure(): void {
     listener();
   }
 
-  if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+  if (
+    typeof window !== 'undefined' &&
+    window.location.pathname !== '/login' &&
+    window.location.pathname !== '/register'
+  ) {
     window.location.assign('/login');
   }
 }
@@ -73,6 +77,23 @@ async function requestToken(
   }
 
   return storeTokenResponse(await readJson<TokenResponse>(response));
+}
+
+async function readErrorMessage(response: Response, fallbackMessage: string) {
+  try {
+    const error = (await response.json()) as { message?: string | string[] };
+    if (Array.isArray(error.message)) {
+      return error.message.join(', ');
+    }
+
+    if (typeof error.message === 'string') {
+      return error.message;
+    }
+  } catch {
+    return fallbackMessage;
+  }
+
+  return fallbackMessage;
 }
 
 export function loginRequest(
@@ -151,4 +172,17 @@ export async function apiFetch(
   }
 
   return response;
+}
+
+export async function apiFetchJson<T>(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+): Promise<T> {
+  const response = await apiFetch(input, init);
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, 'Request failed'));
+  }
+
+  return readJson<T>(response);
 }

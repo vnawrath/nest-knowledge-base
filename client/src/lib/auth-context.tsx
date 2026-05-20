@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -8,6 +9,7 @@ import {
 } from 'react';
 import {
   apiFetch,
+  apiFetchJson,
   clearAccessToken,
   loginRequest,
   onAuthFailure,
@@ -33,17 +35,35 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 async function loadCurrentUser(): Promise<AuthUser | null> {
-  const response = await apiFetch('/api/auth/me');
-  if (!response.ok) {
+  try {
+    return await apiFetchJson<AuthUser>('/api/auth/me');
+  } catch {
     return null;
   }
-
-  return (await response.json()) as AuthUser;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const login = useCallback(async (email: string, password: string) => {
+    await loginRequest(email, password);
+    setUser(await loadCurrentUser());
+  }, []);
+
+  const register = useCallback(
+    async (name: string, email: string, password: string) => {
+      await registerRequest(name, email, password);
+      setUser(await loadCurrentUser());
+    },
+    [],
+  );
+
+  const logout = useCallback(async () => {
+    await apiFetch('/api/auth/logout', { method: 'POST' }, false);
+    clearAccessToken();
+    setUser(null);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,23 +99,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AuthContextValue>(
     () => ({
-      user,
       loading,
-      async login(email: string, password: string) {
-        await loginRequest(email, password);
-        setUser(await loadCurrentUser());
-      },
-      async register(name: string, email: string, password: string) {
-        await registerRequest(name, email, password);
-        setUser(await loadCurrentUser());
-      },
-      async logout() {
-        await apiFetch('/api/auth/logout', { method: 'POST' }, false);
-        clearAccessToken();
-        setUser(null);
-      },
+      login,
+      logout,
+      register,
+      user,
     }),
-    [loading, user],
+    [loading, login, logout, register, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

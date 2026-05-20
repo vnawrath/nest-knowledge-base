@@ -1,36 +1,75 @@
-import { useActionData, useLoaderData } from 'react-router';
-import { PageScaffold } from './PageScaffold';
-import {
-  createPlaceholderAction,
-  requireAuthenticatedLoader,
-} from '../session';
+import { Form, useLoaderData } from 'react-router';
+import { LogEntryCard, PageHeader } from '@/components/workspace-ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getLogSnapshot } from '@/lib/mock-data';
+import { requireAuthenticatedLoader } from '../session';
 
-export async function loader() {
+export async function loader({ request }: { request: Request }) {
+  const url = new URL(request.url);
+  const operation = url.searchParams.get('operation') ?? 'all';
+
   return requireAuthenticatedLoader({
-    filters: ['ingest', 'query', 'lint'],
-    parsedEntries: [],
-    route: 'Log',
+    entries: getLogSnapshot(operation),
+    operation,
   });
 }
-
-export const action = createPlaceholderAction('filter-log');
+export const action = undefined;
 
 export default function LogPage() {
   const loaderData = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
 
   return (
-    <PageScaffold
-      actionData={actionData}
-      fields={[
-        { defaultValue: 'filter-log', label: 'Intent', name: 'intent' },
-        { defaultValue: 'ingest', label: 'Operation', name: 'operation' },
-      ]}
-      loaderData={loaderData}
-      route="/log"
-      submitLabel="Submit log action"
-      summary="Parsed log.md scaffold with operation, date, and title filtering."
-      title="Log"
-    />
+    <main className="space-y-6">
+      <PageHeader
+        description="Chronological, append-only activity with the exact heading format preserved so unix tooling still works."
+        eyebrow="Log"
+        title="Parsed log.md"
+      />
+
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="space-y-4">
+          {loaderData.entries.map((entry) => (
+            <LogEntryCard key={entry.id} entry={entry} />
+          ))}
+        </div>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">Operation filter</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Form className="space-y-3" method="get">
+                <select
+                  className="h-11 w-full rounded-2xl border border-input bg-card px-4 text-sm"
+                  defaultValue={loaderData.operation}
+                  name="operation"
+                >
+                  <option value="all">All operations</option>
+                  <option value="ingest">Ingest</option>
+                  <option value="query">Query</option>
+                  <option value="lint">Lint</option>
+                  <option value="review">Review</option>
+                </select>
+              </Form>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">Why this matters</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <p>
+                Every heading stays parseable:{' '}
+                <code>## [YYYY-MM-DD] operation | Title</code>.
+              </p>
+              <p>
+                This makes quick shell inspection and git review practical even
+                outside the UI.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    </main>
   );
 }

@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '../lib/auth-context';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { register } = useAuth();
+  const [name, setName] = useState('Archive Steward');
   const [email, setEmail] = useState('analyst@example.com');
   const [password, setPassword] = useState('password123');
   const [error, setError] = useState<string | null>(null);
@@ -19,13 +20,13 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      await login(email, password);
+      await register(name, email, password);
       await navigate('/');
     } catch (submitError) {
       setError(
         submitError instanceof Error
           ? submitError.message
-          : 'Unable to sign in right now.',
+          : 'Unable to create the workspace account right now.',
       );
     } finally {
       setSubmitting(false);
@@ -34,16 +35,27 @@ export default function LoginPage() {
 
   return (
     <AuthShell
-      alternateHref="/register"
-      alternateLabel="Register"
-      alternatePrompt="Need a workspace account?"
-      description="Sign in with the existing JWT and refresh-cookie session managed by the Nest auth backend."
-      title="Return to the workshop"
+      alternateHref="/login"
+      alternateLabel="Sign in"
+      alternatePrompt="Already have an account?"
+      description="Create the first workspace account and start compiling a durable knowledge base."
+      title="Create a private account"
     >
       <form
         className="space-y-4"
         onSubmit={(event) => void handleSubmit(event)}
       >
+        <label className="block space-y-2">
+          <span className="text-sm font-semibold text-foreground">
+            Display name
+          </span>
+          <Input
+            autoComplete="name"
+            name="name"
+            onChange={(event) => setName(event.target.value)}
+            value={name}
+          />
+        </label>
         <label className="block space-y-2">
           <span className="text-sm font-semibold text-foreground">Email</span>
           <Input
@@ -59,7 +71,7 @@ export default function LoginPage() {
             Password
           </span>
           <Input
-            autoComplete="current-password"
+            autoComplete="new-password"
             name="password"
             onChange={(event) => setPassword(event.target.value)}
             type="password"
@@ -77,7 +89,7 @@ export default function LoginPage() {
           size="lg"
           type="submit"
         >
-          {submitting ? 'Signing in...' : 'Sign in'}
+          {submitting ? 'Creating account...' : 'Create account'}
         </Button>
       </form>
     </AuthShell>
